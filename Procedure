@@ -1,20 +1,20 @@
-# Serverless Contact Form using AWS
+Serverless Contact Form using AWS
 
-## Project Overview
+Project Overview
 
-This project demonstrates how to build a **serverless contact form** using AWS services.
-The form collects user information (name, email, message) and stores it in a cloud database without managing any servers.
+This project demonstrates how to build a serverless contact form using AWS services. The form collects user information such as name, email, and message and stores it in a cloud database without managing any servers.
 
-The project uses:
+The project uses the following AWS services:
 
-* **Amazon API Gateway** – Creates an API endpoint for the form
-* **AWS Lambda** – Processes the form request
-* **Amazon DynamoDB** – Stores the contact form data
-* HTML + JavaScript – Frontend form
+Amazon API Gateway – Creates an API endpoint for the form
+AWS Lambda – Processes the form request
+Amazon DynamoDB – Stores the contact form data
 
----
+The frontend is built using HTML and JavaScript.
 
-# Architecture
+Architecture
+
+The workflow of the application is as follows:
 
 User submits the form from the browser.
 
@@ -26,73 +26,50 @@ AWS Lambda Function
 ↓
 DynamoDB Table (Stores name, email, message)
 
----
+Project Files
 
-# Project Files
-
-```
 contact-form-project
 
 contact.html
 lambda_function.py
 README.md
-```
 
----
+Step 1 – Create DynamoDB Table
 
-# Step 1 – Create DynamoDB Table
+Open AWS Console.
+Go to Amazon DynamoDB.
+Click Create Table.
 
-1. Open **AWS Console**
-2. Go to **Amazon DynamoDB**
-3. Click **Create Table**
-
-Configuration:
+Use the following configuration:
 
 Table Name
-
-```
 contact-form-data
-```
 
 Partition Key
-
-```
 id (String)
-```
 
-4. Click **Create Table**
+Click Create Table.
 
----
+Step 2 – Create Lambda Function
 
-# Step 2 – Create Lambda Function
+Open AWS Lambda.
+Click Create Function.
+Choose Author from Scratch.
 
-1. Open **AWS Lambda**
-2. Click **Create Function**
-3. Choose **Author from Scratch**
+Use the following configuration:
 
-Configuration:
-
-Function name
-
-```
+Function Name
 contactFormFunction
-```
 
 Runtime
-
-```
 Python 3.x
-```
 
-4. Click **Create Function**
+Click Create Function.
 
----
+Step 3 – Lambda Function Code
 
-# Step 3 – Lambda Function Code
+Replace the default Lambda code with the following Python code.
 
-Replace the default code with:
-
-```python
 import json
 import boto3
 import uuid
@@ -102,100 +79,68 @@ table = dynamodb.Table('contact-form-data')
 
 def lambda_handler(event, context):
 
-    body = json.loads(event['body'])
+body = json.loads(event['body'])
 
-    name = body['name']
-    email = body['email']
-    message = body['message']
+name = body['name']
+email = body['email']
+message = body['message']
 
-    item = {
-        'id': str(uuid.uuid4()),
-        'name': name,
-        'email': email,
-        'message': message
-    }
+item = {
+    'id': str(uuid.uuid4()),
+    'name': name,
+    'email': email,
+    'message': message
+}
 
-    table.put_item(Item=item)
+table.put_item(Item=item)
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps('Message stored successfully')
-    }
-```
+return {
+    'statusCode': 200,
+    'headers': {
+        'Access-Control-Allow-Origin': '*'
+    },
+    'body': json.dumps('Message stored successfully')
+}
 
-Click **Deploy**.
+After adding the code, click Deploy.
 
----
+Step 4 – Add DynamoDB Permission to Lambda
 
-# Step 4 – Add DynamoDB Permission to Lambda
+Go to the Lambda function Configuration tab.
+Click Permissions.
+Open the Execution Role.
 
-1. Go to Lambda **Configuration**
-2. Click **Permissions**
-3. Open the **Execution Role**
-4. Click **Add Permissions**
-5. Attach policy:
+Click Add Permissions and attach the following policy:
 
-```
 AmazonDynamoDBFullAccess
-```
 
-This allows Lambda to write data to DynamoDB.
+This allows the Lambda function to write data to DynamoDB.
 
----
+Step 5 – Create API Gateway
 
-# Step 5 – Create API Gateway
+Open Amazon API Gateway.
+Click Create API.
+Select HTTP API.
 
-1. Open **Amazon API Gateway**
-2. Click **Create API**
-3. Select **HTTP API**
+Add an integration with the Lambda function:
 
-Add integration:
-
-```
 Lambda → contactFormFunction
-```
 
-Create route:
+Create the following route:
 
-```
 POST /contact
-```
 
-Deploy the API and copy the **Invoke URL**.
+Deploy the API and copy the Invoke URL.
 
 Example:
 
-```
 https://xxxxx.execute-api.us-east-1.amazonaws.com/prod/contact
-```
 
----
+Step 6 – Create Contact Form (Frontend)
 
-# Step 6 – Create Contact Form (Frontend)
+Create a file called contact.html and add the following code.
 
-Create a file called:
-
-```
-contact.html
-```
-
-Example:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Contact Form</title>
-</head>
-
-<body>
-
-<h2>Contact Us</h2>
-
-<form id="contactForm">
+<!DOCTYPE html> <html> <head> <title>Contact Form</title> </head> <body> <h2>Contact Us</h2> <form id="contactForm">
 
 Name
 <input type="text" id="name" required>
@@ -204,93 +149,42 @@ Email
 <input type="email" id="email" required>
 
 Message
+
 <textarea id="message" required></textarea>
 
 <button type="submit">Send</button>
 
-</form>
+</form> <script> document.getElementById("contactForm").addEventListener("submit", async function(e){ e.preventDefault(); const data = { name: document.getElementById("name").value, email: document.getElementById("email").value, message: document.getElementById("message").value }; await fetch("YOUR_API_ENDPOINT", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }); alert("Message Sent Successfully"); }); </script> </body> </html>
 
-<script>
+Replace YOUR_API_ENDPOINT with your API Gateway URL.
 
-document.getElementById("contactForm").addEventListener("submit", async function(e){
+Step 7 – Run the Contact Form Locally
 
-e.preventDefault();
+Start a simple Python server by running the following command:
 
-const data = {
-name: document.getElementById("name").value,
-email: document.getElementById("email").value,
-message: document.getElementById("message").value
-};
-
-await fetch("YOUR_API_ENDPOINT", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify(data)
-});
-
-alert("Message Sent Successfully");
-
-});
-
-</script>
-
-</body>
-</html>
-```
-
-Replace:
-
-```
-YOUR_API_ENDPOINT
-```
-
-with your API Gateway URL.
-
----
-
-# Step 7 – Run the Contact Form Locally
-
-Start a simple Python server:
-
-```
 python -m http.server
-```
 
-Open in browser:
+Open the form in your browser using:
 
-```
 http://localhost:8000/contact.html
-```
 
 Submit the form.
 
----
+Step 8 – Verify Data in DynamoDB
 
-# Step 8 – Verify Data in DynamoDB
+Open Amazon DynamoDB in the AWS Console.
+Open the table named contact-form-data.
+Click Explore Table Items.
 
-1. Go to **Amazon DynamoDB**
-2. Open table:
+You will see the submitted contact form data stored in the database.
 
-```
-contact-form-data
-```
+Conclusion
 
-3. Click **Explore Table Items**
+This project demonstrates a fully serverless architecture using AWS services. It shows how frontend applications can interact with cloud services without managing servers.
 
-You will see submitted form data stored in the database.
+The key skills demonstrated in this project include:
 
----
-
-# Conclusion
-
-This project demonstrates a **fully serverless architecture** using AWS services.
-It shows how frontend applications can interact with cloud services without managing servers.
-
-Key skills demonstrated:
-
-* Serverless architecture
-* API integration
-* Cloud database usage
-* AWS service integration
+Serverless architecture
+API integration
+Cloud database usage
+AWS service integration
