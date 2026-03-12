@@ -7,9 +7,9 @@ This project is a simple **serverless contact form application** built using AWS
 The frontend is developed using **HTML and JavaScript**, while the backend is powered by AWS serverless services. The form sends data to an API endpoint, which triggers a Lambda function to process and store the data.
 
 ## Technologies Used
-- :contentReference[oaicite:0]{index=0}
-- :contentReference[oaicite:1]{index=1}
-- :contentReference[oaicite:2]{index=2}
+- AWS Lambda
+- Amazon API Gateway
+- Amazon DynamoDB
 - HTML
 - JavaScript
 
